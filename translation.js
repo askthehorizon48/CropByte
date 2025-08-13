@@ -83,18 +83,4 @@ const translations = {
     hearAdvice: "🔊 ಸಲಹೆ ಕೇಳಿ",
     downloadReport: "⬇ ವರದಿಯನ್ನು ಡೌನ್‌ಲೋಡ್ ಮಾಡಿ"
   },
-  mar: {
-    title: "आपली भाषा निवडा",
-    description: "आपल्याला सोयीस्कर असलेली भाषा निवडा.",
-    heroTitle: "आपला स्मार्ट वनस्पती आरोग्य सहाय्यक",
-    heroDesc: "आजारी वनस्पतींची झटपट तपासणी करा. फोटो घ्या, उत्तर मिळवा, आपली पिके वाचवा.",
-    uploadLabel: "पिकाचा फोटो अपलोड करा",
-    notesLabel: "अतिरिक्त नोंदी (पर्यायी)",
-    notesPlaceholder: "लक्षणे किंवा चिंता वर्णन करा",
-    analyzeBtn: "विश्लेषण करा",
-    detectedDisease: "आढळलेला रोग:",
-    advice: "सल्ला:",
-    hearAdvice: "🔊 सल्ला ऐका",
-    downloadReport: "⬇ रिपोर्ट डाउनलोड करा"
-  },
 };
