@@ -15,4 +15,3 @@ How it works:
 - Treatment Recommendations from trusted agronomic databases
 - Multilingual interface 
 - Offline capability
-Farmer-Friendly UI<img width="2247" height="563" alt="image" src="https://github.com/user-attachments/assets/5d4d8d8b-42be-4efa-892b-7170123f8aea" />
