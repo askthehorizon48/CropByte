@@ -49,6 +49,13 @@ document.addEventListener('DOMContentLoaded', () => {
       document.getElementById('downloadReportBtn').textContent = translations[lang].downloadReport;
     }
   }
+  const takePhotoBtn = document.getElementById('takePhotoBtn');
+  const imageInput = document.getElementById('imageInput');
+  if (takePhotoBtn && imageInput) {
+    takePhotoBtn.addEventListener('click', function() {
+      imageInput.click();
+    });
+  }
 });
 
 window.onload = function() {
