@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <title>Cropbyte</title>
   <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
 </head>
 <body class="main-page">
      <header>
@@ -18,23 +19,20 @@
         <div class="hero-img">
             <img src="https://images.unsplash.com/photo-1599328580087-15c9dab481f3?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8N3x8cGFkZHklMjBmaWVsZHxlbnwwfHwwfHx8MA%3D%3D" alt="Healthy crop field">
         </div>
-    </section>
-    <main>
+          </section>
+          <main>
         <form id="cropForm" autocomplete="off">
             <!-- Removed language and location fields -->
             <label for="imageInput" id="uploadLabel">Upload Crop Image</label>
-            <input type="file" accept="image/*" id="imageInput" capture="environment" style="font-size:1.2em; padding:1em; width:100%; max-width:400px;">
+            <button type="button" id="takePhotoBtn" style="margin-bottom:10px;">
+          <i class="fa-solid fa-camera"></i> Take photo
+            </button>
+            <input type="file" accept="image/*" capture="environment" id="imageInput">
             <div id="imageContainer"></div>
             <label for="notes" id="notesLabel">Additional Notes (optional)</label>
             <textarea id="notes" rows="2" placeholder="Describe symptoms or concerns"></textarea>
             <button type="button" id="analyzeBtn">Analyze</button>
         </form>
-        <div class="result-section" id="resultSection" style="display:none;">
-            <h2 id="detectedDiseaseLabel">Detected Disease: <span id="disease">Leaf Blight</span></h2>
-            <p id="adviceLabel">Advice: <span id="advice">Use neem oil spray and isolate infected plants.</span></p>
-            <button id="hearAdviceBtn">🔊 Hear Advice</button>
-            <button id="downloadReportBtn">⬇ Download Report</button>
-        </div>
     </main>
     <footer>
         &copy; 2024 Cropbyte | For educational use
