@@ -1,53 +1,73 @@
-import tensorflow as tf
 import json
-import os
+from pathlib import Path
+from typing import Tuple
 
-# Constants
+import tensorflow as tf
+
+
 IMG_SIZE = 224
 BATCH_SIZE = 32
-DATA_DIR = "C:/Users/aadis/OneDrive/Documents/GitHub/CropByte/data/PlantVillage"
+VALIDATION_SPLIT = 0.2
+SEED = 123
+with (Path(__file__).resolve().parent / "cropbyte_labels.json").open(encoding="utf-8") as labels_file:
+    EXPECTED_LABELS = json.load(labels_file)
 
 
 def preprocess(image, label):
-    image = tf.image.resize(image, (IMG_SIZE, IMG_SIZE))
-    image = tf.cast(image, tf.float32) / 255.0
+    image = tf.keras.applications.mobilenet_v2.preprocess_input(image)
     return image, label
 
 
-def load_dataset():
-    # Load dataset using image_dataset_from_directory
-    train_ds = tf.keras.preprocessing.image_dataset_from_directory(
-        DATA_DIR,
-        validation_split=0.2,
-        subset="training",
-        seed=123,
-        image_size=(IMG_SIZE, IMG_SIZE),
-        batch_size=BATCH_SIZE
-    )
+def load_dataset(
+    data_dir: Path,
+    image_size: int = IMG_SIZE,
+    batch_size: int = BATCH_SIZE,
+) -> Tuple[tf.data.Dataset, tf.data.Dataset, list[str]]:
+    data_dir = Path(data_dir)
+    if not data_dir.is_dir():
+        raise FileNotFoundError(
+            f"PlantVillage dataset folder not found: {data_dir}. "
+            "Run download_dataset.py or provide a folder with the 15 supported classes."
+        )
 
-    val_ds = tf.keras.preprocessing.image_dataset_from_directory(
-        DATA_DIR,
-        validation_split=0.2,
-        subset="validation",
-        seed=123,
-        image_size=(IMG_SIZE, IMG_SIZE),
-        batch_size=BATCH_SIZE
-    )
+    train_dir = data_dir / "train"
+    val_dir = data_dir / "validation"
+    dataset_options = {
+        "image_size": (image_size, image_size),
+        "batch_size": batch_size,
+        "label_mode": "int",
+        "class_names": EXPECTED_LABELS,
+    }
+    if train_dir.is_dir() and val_dir.is_dir():
+        train_ds = tf.keras.utils.image_dataset_from_directory(
+            train_dir,
+            seed=SEED,
+            shuffle=True,
+            **dataset_options,
+        )
+        val_ds = tf.keras.utils.image_dataset_from_directory(
+            val_dir,
+            shuffle=False,
+            **dataset_options,
+        )
+    else:
+        train_ds = tf.keras.utils.image_dataset_from_directory(
+            data_dir,
+            validation_split=VALIDATION_SPLIT,
+            subset="training",
+            seed=SEED,
+            **dataset_options,
+        )
+        val_ds = tf.keras.utils.image_dataset_from_directory(
+            data_dir,
+            validation_split=VALIDATION_SPLIT,
+            subset="validation",
+            seed=SEED,
+            **dataset_options,
+        )
 
-    # Save label names to labels.json
-    label_names = train_ds.class_names
-    label_map = {i: name for i, name in enumerate(label_names)}
-    with open('labels.json', 'w') as f:
-        json.dump(label_map, f)
-    print("✅ Saved labels.json")
+    class_names = EXPECTED_LABELS
 
-    # Apply preprocessing
     train_ds = train_ds.map(preprocess).prefetch(tf.data.AUTOTUNE)
     val_ds = val_ds.map(preprocess).prefetch(tf.data.AUTOTUNE)
-
-    return train_ds, val_ds, len(label_names)
-
-
-if __name__ == "__main__":
-    train_ds, val_ds, num_classes = load_dataset()
-    print(f"✅ Loaded {num_classes} classes")
+    return train_ds, val_ds, class_names

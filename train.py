@@ -1,52 +1,65 @@
+import argparse
+import json
+from pathlib import Path
+
 import tensorflow as tf
 from tensorflow.keras.applications import MobileNetV2
-from tensorflow.keras.models import Model
 from tensorflow.keras.layers import Dense, GlobalAveragePooling2D
+from tensorflow.keras.models import Model
 from tensorflow.keras.optimizers import Adam
-from preprocess import load_dataset
 
-train_ds, val_ds, num_classes = load_dataset()
-# Load training set
-train_ds = tf.keras.preprocessing.image_dataset_from_directory(
-    "C:/Users/aadis/OneDrive/Documents/GitHub/CropByte/data/PlantVillage",
-    validation_split=0.2,
-    subset="training",
-    seed=123,
-    image_size=(224, 224),
-    batch_size=32
-)
+from preprocess import IMG_SIZE, load_dataset
 
-# Load validation set
-val_ds = tf.keras.preprocessing.image_dataset_from_directory(
-    "C:/Users/aadis/OneDrive/Documents/GitHub/CropByte/data/PlantVillage",
-    validation_split=0.2,
-    subset="validation",
-    seed=123,
-    image_size=(224, 224),
-    batch_size=32
-)
-num_classes = len(train_ds.class_names)
 
-train_ds = train_ds.prefetch(tf.data.AUTOTUNE)
-val_ds = val_ds.prefetch(tf.data.AUTOTUNE)
+ROOT = Path(__file__).resolve().parent
+DATA_DIR = ROOT / "data" / "PlantVillage"
+MODEL_PATH = ROOT / "cropbyte_model.tflite"
+LABELS_PATH = ROOT / "cropbyte_labels.json"
+METADATA_PATH = ROOT / "cropbyte_model.json"
+PREPROCESSING = "mobilenet_v2_preprocess_input"
 
-base_model = MobileNetV2(
-    weights='imagenet', include_top=False, input_shape=(224, 224, 3))
-x = base_model.output
-x = GlobalAveragePooling2D()(x)
-x = Dense(128, activation='relu')(x)
-predictions = Dense(num_classes, activation='softmax')(x)
-model = Model(inputs=base_model.input, outputs=predictions)
 
-model.compile(optimizer=Adam(),
-              loss='sparse_categorical_crossentropy', metrics=['accuracy'])
+def train(data_dir: Path, epochs: int = 10) -> None:
+    train_ds, val_ds, class_names = load_dataset(data_dir)
+    base_model = MobileNetV2(
+        weights="imagenet",
+        include_top=False,
+        input_shape=(IMG_SIZE, IMG_SIZE, 3),
+    )
+    base_model.trainable = False
 
-model.fit(train_ds, validation_data=val_ds, epochs=5)
-model.save('cropbyte_model.h5')
-print("✅ Saved cropbyte_model.h5")
+    features = GlobalAveragePooling2D()(base_model.output)
+    features = Dense(128, activation="relu")(features)
+    predictions = Dense(len(class_names), activation="softmax")(features)
+    model = Model(inputs=base_model.input, outputs=predictions)
+    model.compile(
+        optimizer=Adam(learning_rate=0.001),
+        loss="sparse_categorical_crossentropy",
+        metrics=["accuracy"],
+    )
+    model.fit(train_ds, validation_data=val_ds, epochs=epochs)
 
-converter = tf.lite.TFLiteConverter.from_keras_model(model)
-tflite_model = converter.convert()
-with open('cropbyte_model.tflite', 'wb') as f:
-    f.write(tflite_model)
-print("✅ Saved cropbyte_model.tflite")
+    converter = tf.lite.TFLiteConverter.from_keras_model(model)
+    tflite_model = converter.convert()
+    MODEL_PATH.write_bytes(tflite_model)
+    LABELS_PATH.write_text(json.dumps(class_names, indent=2) + "\n", encoding="utf-8")
+    metadata = {
+        "input_size": IMG_SIZE,
+        "preprocessing": PREPROCESSING,
+        "classes": class_names,
+    }
+    METADATA_PATH.write_text(json.dumps(metadata, indent=2) + "\n", encoding="utf-8")
+    print(f"Saved {MODEL_PATH.name}, {LABELS_PATH.name}, and {METADATA_PATH.name}")
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Train the CropByte classifier.")
+    parser.add_argument(
+        "--data-dir",
+        type=Path,
+        default=DATA_DIR,
+        help=f"PlantVillage folder (default: {DATA_DIR})",
+    )
+    parser.add_argument("--epochs", type=int, default=10)
+    args = parser.parse_args()
+    train(args.data_dir, args.epochs)

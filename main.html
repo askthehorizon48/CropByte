@@ -9,6 +9,7 @@
 <body class="main-page">
      <header>
         <h1 style="margin:0;">🌱 Cropbyte</h1>
+        <button type="button" id="changeLanguageBtn">Change language</button>
     </header>
     <section class="hero">
         <div class="hero-text">
@@ -22,16 +23,55 @@
           </section>
           <main>
         <form id="cropForm" autocomplete="off">
-            <!-- Removed language and location fields -->
             <label for="imageInput" id="uploadLabel">Upload Crop Image</label>
-            <button type="button" id="takePhotoBtn" style="margin-bottom:10px;">
-          <i class="fa-solid fa-camera"></i> Take photo
+            <button type="button" id="takePhotoBtn">
+              <i class="fa-solid fa-camera" aria-hidden="true"></i> Take photo
             </button>
-            <input type="file" accept="image/*" capture="environment" id="imageInput">
-            <div id="imageContainer"></div>
+            <input type="file" accept="image/*" capture="environment" id="imageInput" required>
+            <div id="imagePreview" class="image-preview" hidden></div>
             <label for="notes" id="notesLabel">Additional Notes (optional)</label>
             <textarea id="notes" rows="2" placeholder="Describe symptoms or concerns"></textarea>
-            <button type="button" id="analyzeBtn">Analyze</button>
+            <button type="submit" id="analyzeBtn">Analyze</button>
+            <p id="statusMessage" class="status-message" role="status" aria-live="polite"></p>
+            <section id="modelSetup" class="model-setup" role="alert" hidden>
+              <h2 id="modelSetupTitle">Prediction is not ready</h2>
+              <p id="modelSetupMessage"></p>
+              <ol>
+                <li>
+                  <span id="modelSetupDataset"></span>
+                  <pre><code id="downloadCommand">py download_dataset.py</code></pre>
+                </li>
+                <li>
+                  <span id="modelSetupTrain"></span>
+                  <pre><code id="trainCommand">.\.venv\Scripts\python.exe train.py --data-dir ".\data\PlantVillage" --epochs 10</code></pre>
+                </li>
+              </ol>
+              <p id="modelSetupSpace"></p>
+              <p><a id="readmeLink" href="README.md">Open the setup guide</a></p>
+              <p><a id="datasetLink" href="https://huggingface.co/datasets/mohanty/PlantVillage" target="_blank" rel="noopener noreferrer">Official PlantVillage dataset</a></p>
+              <button type="button" id="retryModelBtn">Check again</button>
+              <details>
+                <summary id="technicalDetailsLabel">Technical details</summary>
+                <p id="modelDiagnostic"></p>
+              </details>
+            </section>
+            <section id="result" class="result-section" aria-live="polite" hidden>
+              <h2 id="resultHeading">Analysis result</h2>
+              <p><strong id="detectedDiseaseLabel">Detected condition:</strong> <span id="diseaseName"></span></p>
+              <p><strong id="confidenceLabel">Confidence:</strong> <span id="confidenceValue"></span></p>
+              <p id="confidenceNotice" class="confidence-notice" hidden></p>
+              <h3 id="adviceLabel">Advice:</h3>
+              <p id="adviceText"></p>
+              <div id="alternatives" hidden>
+                <h3 id="alternativesLabel">Other possibilities</h3>
+                <ul id="alternativesList"></ul>
+              </div>
+              <div class="result-actions">
+                <button type="button" id="hearAdviceBtn">Hear advice</button>
+                <button type="button" id="downloadReportBtn">Download report</button>
+              </div>
+              <p id="disclaimer" class="disclaimer">This AI result is an estimate, not a confirmed diagnosis. Consult a local agricultural expert before treatment.</p>
+            </section>
         </form>
     </main>
     <footer>
