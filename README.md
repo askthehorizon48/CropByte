@@ -19,17 +19,32 @@ press **Ctrl+C** there to stop the server. Do not launch the pages with
 `file://` or `python -m http.server` because image analysis requires the Flask
 API.
 
+## Publish a shareable website with Render
+
+The project includes a `render.yaml` deployment blueprint. To publish it:
+
+1. Commit and push the app, `render.yaml`, `requirements.txt`, and the trained
+   `cropbyte_model.tflite`, `cropbyte_labels.json`, and `cropbyte_model.json`
+   files to the GitHub repository. The dataset in `data\` should stay local and
+   is not needed to run predictions.
+2. In Render, choose **New** > **Blueprint**, connect the GitHub repository,
+   and deploy the `render.yaml` blueprint.
+3. Wait for the build and deploy to finish, then share the public `onrender.com`
+   URL shown in the Render dashboard.
+
+The free Render service may sleep when idle, so the first visit after inactivity
+can take longer. The model is an estimate and should not be used as a confirmed
+crop diagnosis.
+
 ## Retrain the classifier
 
-The model currently in the project was trained with a different preprocessing
-pipeline and repeatedly predicts `Corn___healthy`. The app refuses to serve that
-stale model so it cannot present those predictions as diagnoses. The training
-dataset is not included in this project. The official
-[PlantVillage dataset](https://huggingface.co/datasets/mohanty/PlantVillage)
-provides the source images and grouped train/test splits. Its source archive is
-about 2.03 GiB; make sure there is enough free disk space before downloading.
-The downloader below keeps the 15 classes this project supports and maps them
-to the matching class names.
+The project includes a trained 15-class model and matching labels and metadata.
+The training dataset is not included. To retrain or fine-tune the model, use the
+official [PlantVillage dataset](https://huggingface.co/datasets/mohanty/PlantVillage),
+which provides the source images and grouped train/test splits. Its source
+archive is about 2.03 GiB; make sure there is enough free disk space before
+downloading. The downloader keeps the 15 classes this project supports and maps
+them to the matching class names.
 
 Run these commands from the CropByte folder:
 
